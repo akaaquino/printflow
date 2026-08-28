@@ -1,0 +1,132 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    function signedIn() {
+      return request.auth != null;
+    }
+
+    function hasTenant(data) {
+      return data.keys().hasAny(['tenantId']);
+    }
+
+    // Deny-by-default: um documento só é legível/gravável pelo tenant se ele
+    // possuir explicitamente o campo tenantId igual ao uid autenticado.
+    // Documentos sem tenantId (legados ou criados fora do fluxo da aplicação)
+    // NUNCA são liberados automaticamente — isso é o que antes permitia que
+    // qualquer usuário autenticado lesse/escrevesse dados de outro tenant.
+    function canReadTenant() {
+      return signedIn() &&
+        hasTenant(resource.data) &&
+        resource.data.tenantId == request.auth.uid;
+    }
+
+    function canWriteTenant() {
+      return signedIn() &&
+        hasTenant(request.resource.data) &&
+        request.resource.data.tenantId == request.auth.uid;
+    }
+
+    function validProductionStatus() {
+      return !request.resource.data.keys().hasAny(['status']) ||
+        request.resource.data.status in [
+          'Fila',
+          'Em Produção',
+          'Acabamento',
+          'Pronta',
+          'Instalação',
+          'Finalizada',
+          'Problema',
+          'Aguardando impressão',
+          'Impressão',
+          'Corte',
+          'Pronto',
+          'Finalizado'
+        ];
+    }
+
+    function validProductionWrite() {
+      return validProductionStatus() &&
+        (!request.resource.data.keys().hasAny(['area']) ||
+          request.resource.data.area is number ||
+          request.resource.data.area is string);
+    }
+
+    function validInstallationStatus() {
+      return !request.resource.data.keys().hasAny(['status']) ||
+        request.resource.data.status in [
+          'Aguardando Agendamento',
+          'Aguardando agendamento',
+          'Agendado',
+          'Em Deslocamento',
+          'Em deslocamento',
+          'Instalando',
+          'Finalizado',
+          'Cancelado'
+        ];
+    }
+
+    function validInstallationWrite() {
+      return request.resource.data.keys().hasAny(['tenantId']) &&
+        request.resource.data.tenantId == request.auth.uid &&
+        validInstallationStatus() &&
+        (!request.resource.data.keys().hasAny(['finalizado']) ||
+          request.resource.data.finalizado is bool) &&
+        (!request.resource.data.keys().hasAny(['cancelado']) ||
+          request.resource.data.cancelado is bool);
+    }
+
+    match /producoes/{documentId} {
+      allow read: if canReadTenant();
+      allow create: if canWriteTenant() && validProductionWrite();
+      allow update: if canReadTenant() && canWriteTenant() && validProductionWrite();
+      allow delete: if canReadTenant();
+    }
+
+    match /instalacoes/{documentId} {
+      allow read: if signedIn() &&
+        resource.data.keys().hasAny(['tenantId']) &&
+        resource.data.tenantId == request.auth.uid;
+      allow create: if signedIn() && validInstallationWrite();
+      allow update: if signedIn() &&
+        resource.data.keys().hasAny(['tenantId']) &&
+        resource.data.tenantId == request.auth.uid &&
+        validInstallationWrite();
+      allow delete: if signedIn() &&
+        resource.data.keys().hasAny(['tenantId']) &&
+        resource.data.tenantId == request.auth.uid;
+    }
+
+    match /{collectionName}/{documentId} {
+      allow read: if collectionName in [
+        'clientes',
+        'orcamentos',
+        'crm',
+        'artes',
+        'materiais',
+        'movimentacoesEstoque',
+        'notasFiscais'
+      ] && canReadTenant();
+
+      allow create, update: if collectionName in [
+        'clientes',
+        'orcamentos',
+        'crm',
+        'artes',
+        'materiais',
+        'movimentacoesEstoque',
+        'notasFiscais'
+      ] && canWriteTenant();
+
+      allow delete: if collectionName in [
+        'clientes',
+        'orcamentos',
+        'crm',
+        'artes',
+        'materiais',
+        'movimentacoesEstoque',
+        'notasFiscais'
+      ] && canReadTenant();
+    }
+  }
+}

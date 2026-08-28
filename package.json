@@ -1,0 +1,44 @@
+{
+  "name": "printflow-saas",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "eslint .",
+    "typecheck": "tsc --noEmit",
+    "security:audit": "npm audit --omit=dev --audit-level=moderate",
+    "security:audit:dev": "npm audit --audit-level=moderate",
+    "security:secrets": "node scripts/security-check.mjs",
+    "security": "npm run security:audit && npm run security:secrets",
+    "verify": "npm run typecheck && npm run lint && npm run security && npm run build",
+    "definir-papel": "node scripts/definir-papel.mjs"
+  },
+  "dependencies": {
+    "firebase": "^12.18.0",
+    "jspdf": "^4.2.1",
+    "jspdf-autotable": "^5.0.7",
+    "next": "^16.3.0",
+    "qrcode": "^1.5.4",
+    "react": "^19.2.4",
+    "react-dom": "^19.2.4"
+  },
+  "devDependencies": {
+    "@tailwindcss/postcss": "^4.3.0",
+    "@types/node": "^20.19.41",
+    "@types/qrcode": "^1.5.6",
+    "@types/react": "^19.2.14",
+    "@types/react-dom": "^19.2.3",
+    "autoprefixer": "^10.5.0",
+    "eslint": "^9.39.4",
+    "eslint-config-next": "^16.2.6",
+    "firebase-admin": "^14.3.0",
+    "postcss": "^8.5.10",
+    "tailwindcss": "^4.3.0",
+    "typescript": "^5.9.3"
+  },
+  "overrides": {
+    "postcss": "$postcss"
+  }
+}
