@@ -34,3 +34,12 @@ You can check out [the Next.js GitHub repository](https://github.com/vercel/next
 The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
 
 Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+
+
+## Integração SPECIA → PrintFlow
+
+O PrintFlow expõe `POST /api/integrations/specia/order` para receber uma OS gerada pela SPECIA e registrá-la como pedido na coleção `crm`. A rota usa Firebase Admin no servidor e um segredo compartilhado.
+
+Variáveis necessárias: `FIREBASE_PROJECT_ID`, `FIREBASE_CLIENT_EMAIL`, `FIREBASE_PRIVATE_KEY`, `SPECIA_INTEGRATION_SECRET`. Opcionalmente, `SPECIA_ALLOWED_TENANT_ID` restringe a integração a um UID específico.
+
+No SPECIA: `PRINTFLOW_URL`, `PRINTFLOW_INTEGRATION_SECRET` e `PRINTFLOW_TENANT_ID`. Os segredos devem ser iguais nos dois projetos e nunca devem ser commitados.
