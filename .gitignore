@@ -39,3 +39,8 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# local development logs
+*.log
+.next-dev.log
+.next-dev.err.log
