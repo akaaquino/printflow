@@ -88,7 +88,7 @@ function buildItems(order: SpeciaOrder) {
     medida: size || format || "A definir",
     area: 0,
     areaM2: 0,
-    quantidade,
+    quantidade: quantity,
     valorM2: price,
     custoM2: 0,
     valorTotal: price,
