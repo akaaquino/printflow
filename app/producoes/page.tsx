@@ -12,12 +12,12 @@ import {
   getDocs,
   limit,
   orderBy,
-  query,
   runTransaction,
   updateDoc,
 } from "firebase/firestore";
 
 import { auth, db } from "@/app/lib/firebase";
+import { queryDoTenant, obterTenantId } from "@/app/lib/firestore-tenant";
 import {
   MAQUINAS_PRODUCAO,
   PRIORIDADES_PRODUCAO,
@@ -806,10 +806,10 @@ export default function ProducoesPage() {
   async function buscarColecaoLimitada(nome: string) {
     try {
       return await getDocs(
-        query(collection(db, nome), orderBy("criadoEm", "desc"), limit(120))
+        queryDoTenant(collection(db, nome), orderBy("criadoEm", "desc"), limit(120))
       );
     } catch {
-      return getDocs(query(collection(db, nome), limit(120)));
+      return getDocs(queryDoTenant(collection(db, nome), limit(120)));
     }
   }
 
@@ -824,7 +824,7 @@ export default function ProducoesPage() {
         impressorasSnapshot,
       ] =
         await Promise.all([
-          getDocs(collection(db, "producoes")),
+          getDocs(queryDoTenant(collection(db, "producoes"))),
           buscarColecaoLimitada("orcamentos"),
           buscarColecaoLimitada("materiais"),
           buscarColecaoLimitada("impressoras"),
@@ -1520,7 +1520,7 @@ export default function ProducoesPage() {
     historico: HistoricoProducao[],
     agora: Date
   ) {
-    const materiaisSnapshot = await getDocs(collection(db, "materiais"));
+    const materiaisSnapshot = await getDocs(queryDoTenant(collection(db, "materiais")));
     const materiaisLista: MaterialEstoqueDocumento[] = materiaisSnapshot.docs.map((documento) => ({
       id: documento.id,
       ref: doc(db, "materiais", documento.id),

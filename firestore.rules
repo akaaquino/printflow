@@ -105,7 +105,10 @@ service cloud.firestore {
         'artes',
         'materiais',
         'movimentacoesEstoque',
-        'notasFiscais'
+        'notasFiscais',
+        'impressoras',
+        'caixas',
+        'movimentacoesCaixa'
       ] && canReadTenant();
 
       allow create, update: if collectionName in [
@@ -115,7 +118,10 @@ service cloud.firestore {
         'artes',
         'materiais',
         'movimentacoesEstoque',
-        'notasFiscais'
+        'notasFiscais',
+        'impressoras',
+        'caixas',
+        'movimentacoesCaixa'
       ] && canWriteTenant();
 
       allow delete: if collectionName in [
@@ -125,7 +131,10 @@ service cloud.firestore {
         'artes',
         'materiais',
         'movimentacoesEstoque',
-        'notasFiscais'
+        'notasFiscais',
+        'impressoras',
+        'caixas',
+        'movimentacoesCaixa'
       ] && canReadTenant();
     }
   }

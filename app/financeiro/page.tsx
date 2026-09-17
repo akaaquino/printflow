@@ -10,12 +10,11 @@ import {
   deleteDoc,
   doc,
   getDocs,
-  query,
   updateDoc,
-  where,
 } from "firebase/firestore";
 
 import { auth, db } from "@/app/lib/firebase";
+import { queryDoTenant } from "@/app/lib/firestore-tenant";
 
 type PeriodoHistorico = "hoje" | "semana" | "mes" | "ano" | "periodo";
 type AbaFinanceiro = "visao" | "historico" | "caixa";
@@ -612,22 +611,20 @@ export default function FinanceiroPage() {
       setCarregandoFinanceiro(true);
       setErroFinanceiro("");
 
-      const orcamentosSnapshot = await getDocs(collection(db, "orcamentos"));
-      const clientesSnapshot = await getDocs(collection(db, "clientes"));
+      const orcamentosSnapshot = await getDocs(queryDoTenant(collection(db, "orcamentos")));
+      const clientesSnapshot = await getDocs(queryDoTenant(collection(db, "clientes")));
       const movimentacoesSnapshot = await getDocs(
-        collection(db, "movimentacoesEstoque")
+        queryDoTenant(collection(db, "movimentacoesEstoque"))
       );
-      const caixasSnapshot = await getDocs(collection(db, "caixas"));
+      const caixasSnapshot = await getDocs(queryDoTenant(collection(db, "caixas")));
       const movimentacoesCaixaSnapshot = await getDocs(
-        collection(db, "movimentacoesCaixa")
+        queryDoTenant(collection(db, "movimentacoesCaixa"))
       );
       const usuarioAtual = auth.currentUser;
       const notasConsulta = usuarioAtual
-        ? query(
-            collection(db, "notasFiscais"),
-            where("tenantId", "==", usuarioAtual.uid)
-          )
-        : collection(db, "notasFiscais");
+        ? queryDoTenant(collection(db, "notasFiscais"))
+        : null;
+      if (!notasConsulta) throw new Error("Usuário não autenticado.");
       const notasSnapshot = await getDocs(notasConsulta);
 
       const clientes: any[] = [];
@@ -858,7 +855,7 @@ export default function FinanceiroPage() {
   }
 
   async function zerarTodasVendas() {
-    const querySnapshot = await getDocs(collection(db, "orcamentos"));
+    const querySnapshot = await getDocs(queryDoTenant(collection(db, "orcamentos")));
 
     const promessas = querySnapshot.docs.map((documento) =>
       deleteDoc(doc(db, "orcamentos", documento.id))

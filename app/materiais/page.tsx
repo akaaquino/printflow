@@ -15,6 +15,7 @@ import {
 } from "firebase/firestore";
 
 import { db } from "@/app/lib/firebase";
+import { queryDoTenant, obterTenantId } from "@/app/lib/firestore-tenant";
 
 type AbaEstoque = "materiais" | "impressoras";
 
@@ -106,9 +107,9 @@ export default function MateriaisPage() {
 
   async function carregarMateriais() {
     const [querySnapshot, movimentacoesSnapshot, impressorasSnapshot] = await Promise.all([
-      getDocs(collection(db, "materiais")),
-      getDocs(collection(db, "movimentacoesEstoque")),
-      getDocs(collection(db, "impressoras")),
+      getDocs(queryDoTenant(collection(db, "materiais"))),
+      getDocs(queryDoTenant(collection(db, "movimentacoesEstoque"))),
+      getDocs(queryDoTenant(collection(db, "impressoras"))),
     ]);
 
     const lista: any[] = [];
@@ -210,6 +211,7 @@ export default function MateriaisPage() {
   }
 
   async function salvarMaterial() {
+    const tenantId = obterTenantId();
     if (!nome) {
       alert("Digite o nome do material.");
       return;
@@ -218,6 +220,7 @@ export default function MateriaisPage() {
     const estoqueInicial = parseNumero(quantidade);
 
     await addDoc(collection(db, "materiais"), {
+      tenantId,
       nome,
       categoria,
       unidade,
@@ -278,6 +281,7 @@ export default function MateriaisPage() {
     material: any,
     tipo: "entrada" | "saida"
   ) {
+    const tenantId = obterTenantId();
     const valor = prompt(
       tipo === "entrada"
         ? "Quantidade de entrada:"
@@ -309,6 +313,7 @@ export default function MateriaisPage() {
     });
 
     await addDoc(collection(db, "movimentacoesEstoque"), {
+      tenantId,
       materialId: material.id,
       materialNome: material.nome,
       tipo,
@@ -379,9 +384,10 @@ export default function MateriaisPage() {
       setSalvandoImpressora(true);
 
       if (impressoraEditandoId) {
-        await updateDoc(doc(db, "impressoras", impressoraEditandoId), dadosImpressora);
+        await updateDoc(doc(db, "impressoras", impressoraEditandoId), { ...dadosImpressora, tenantId: obterTenantId() });
       } else {
         await addDoc(collection(db, "impressoras"), {
+          tenantId: obterTenantId(),
           ...dadosImpressora,
           criadoEm: new Date(),
         });
@@ -408,6 +414,7 @@ export default function MateriaisPage() {
 
     try {
       await updateDoc(doc(db, "impressoras", impressora.id), {
+        tenantId: obterTenantId(),
         ativo: impressora.ativo === false,
         atualizadoEm: new Date(),
       });
@@ -419,7 +426,7 @@ export default function MateriaisPage() {
   }
 
   async function excluirImpressora(impressora: any) {
-    const producoesSnapshot = await getDocs(collection(db, "producoes"));
+    const producoesSnapshot = await getDocs(queryDoTenant(collection(db, "producoes")));
     const emUso = producoesSnapshot.docs.some((documento) => {
       const dados = documento.data();
 
@@ -435,6 +442,7 @@ export default function MateriaisPage() {
         "Esta impressora já está vinculada a OS. Ela será arquivada para preservar o histórico."
       );
       await updateDoc(doc(db, "impressoras", impressora.id), {
+        tenantId: obterTenantId(),
         ativo: false,
         atualizadoEm: new Date(),
       });

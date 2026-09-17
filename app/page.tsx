@@ -6,6 +6,7 @@ import AuthGuard from "@/components/AuthGuard";
 
 import { collection, getDocs } from "firebase/firestore";
 import { db } from "@/app/lib/firebase";
+import { queryDoTenant } from "@/app/lib/firestore-tenant";
 
 type PeriodoDashboard = "hoje" | "semana" | "tudo";
 
@@ -22,10 +23,10 @@ export default function Home() {
   const [buscaFinalizados, setBuscaFinalizados] = useState("");
 
   async function carregarDashboard() {
-    const orcamentosSnapshot = await getDocs(collection(db, "orcamentos"));
-    const artesSnapshot = await getDocs(collection(db, "artes"));
-    const producoesSnapshot = await getDocs(collection(db, "producoes"));
-    const instalacoesSnapshot = await getDocs(collection(db, "instalacoes"));
+    const orcamentosSnapshot = await getDocs(queryDoTenant(collection(db, "orcamentos")));
+    const artesSnapshot = await getDocs(queryDoTenant(collection(db, "artes")));
+    const producoesSnapshot = await getDocs(queryDoTenant(collection(db, "producoes")));
+    const instalacoesSnapshot = await getDocs(queryDoTenant(collection(db, "instalacoes")));
 
     setOrcamentos(
       orcamentosSnapshot.docs.map((documento) => ({

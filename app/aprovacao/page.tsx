@@ -24,6 +24,7 @@ import {
 } from "firebase/firestore";
 
 import { auth, db } from "@/app/lib/firebase";
+import { queryDoTenant, obterTenantId } from "@/app/lib/firestore-tenant";
 
 const CLOUD_NAME = "dgpkbynbz";
 const UPLOAD_PRESET = "printflow_upload";
@@ -764,7 +765,7 @@ export default function AprovacaoPage() {
   }).length;
 
   async function carregarArtes() {
-    const querySnapshot = await getDocs(collection(db, "artes"));
+    const querySnapshot = await getDocs(queryDoTenant(collection(db, "artes")));
     const lista: any[] = [];
 
     querySnapshot.forEach((documento) => {
@@ -780,7 +781,7 @@ export default function AprovacaoPage() {
   }
 
   async function carregarMateriaisEstoqueAtual() {
-    const querySnapshot = await getDocs(collection(db, "materiais"));
+    const querySnapshot = await getDocs(queryDoTenant(collection(db, "materiais")));
     const lista: any[] = [];
 
     querySnapshot.forEach((documento) => {
@@ -2034,6 +2035,7 @@ export default function AprovacaoPage() {
         : "Aguardando conferência";
 
       const dadosArte = {
+        tenantId: obterTenantId(),
         cliente: cliente.trim(),
         nomeArte: nomeArte.trim(),
         comentario: comentario.trim(),
@@ -2216,14 +2218,14 @@ export default function AprovacaoPage() {
 
   async function buscarProducaoExistente(arte: any, numeroOS?: string) {
     const consultas = [
-      getDocs(query(collection(db, "producoes"), where("arteId", "==", arte.id), limit(1))),
+      getDocs(queryDoTenant(collection(db, "producoes"), where("arteId", "==", arte.id), limit(1))),
     ];
     const numeroBusca = numeroOS || arte.numeroOS;
 
     if (numeroBusca) {
       consultas.push(
         getDocs(
-          query(collection(db, "producoes"), where("numeroOS", "==", numeroBusca), limit(1))
+          queryDoTenant(collection(db, "producoes"), where("numeroOS", "==", numeroBusca), limit(1))
         )
       );
     }

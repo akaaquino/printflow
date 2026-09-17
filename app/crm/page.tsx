@@ -18,6 +18,7 @@ import {
 } from "firebase/firestore";
 
 import { db } from "@/app/lib/firebase";
+import { queryDoTenant, obterTenantId } from "@/app/lib/firestore-tenant";
 
 type ItemPreVenda = {
   id: string;
@@ -123,7 +124,7 @@ export default function CrmPage() {
   ];
 
   async function carregarPedidos() {
-    const querySnapshot = await getDocs(collection(db, "crm"));
+    const querySnapshot = await getDocs(queryDoTenant(collection(db, "crm")));
     const lista: any[] = [];
 
     querySnapshot.forEach((documento) => {
@@ -137,7 +138,7 @@ export default function CrmPage() {
   }
 
   async function carregarMateriais() {
-    const querySnapshot = await getDocs(collection(db, "materiais"));
+    const querySnapshot = await getDocs(queryDoTenant(collection(db, "materiais")));
     const lista: any[] = [];
 
     querySnapshot.forEach((documento) => {
@@ -163,7 +164,7 @@ export default function CrmPage() {
   }
 
   async function carregarClientes() {
-    const querySnapshot = await getDocs(collection(db, "clientes"));
+    const querySnapshot = await getDocs(queryDoTenant(collection(db, "clientes")));
     const lista: any[] = [];
 
     querySnapshot.forEach((documento) => {
@@ -701,6 +702,7 @@ export default function CrmPage() {
     if (clienteEncontrado?.id) return clienteEncontrado.id;
 
     const clienteRef = await addDoc(collection(db, "clientes"), {
+      tenantId: obterTenantId(),
       nome: cliente.trim(),
       razaoSocial: cliente.trim(),
       nomeFantasia: empresa.trim(),
@@ -734,6 +736,7 @@ export default function CrmPage() {
     }
 
     await addDoc(collection(db, "crm"), {
+      tenantId: obterTenantId(),
       cnpj,
       cliente,
       empresa,
@@ -935,7 +938,7 @@ Fico à disposição para ajustar qualquer detalhe.`;
 
       if (cnpjLimpo.length === 14) {
         const clientesCnpjSnapshot = await getDocs(
-          query(collection(db, "clientes"), where("cnpj", "==", pedido.cnpj))
+          queryDoTenant(collection(db, "clientes"), where("cnpj", "==", pedido.cnpj))
         );
 
         if (!clientesCnpjSnapshot.empty) {
@@ -948,7 +951,7 @@ Fico à disposição para ajustar qualquer detalhe.`;
 
       if (!clienteEncontrado && telefoneLimpo) {
         const clientesTelefoneSnapshot = await getDocs(
-          query(collection(db, "clientes"), where("telefone", "==", pedido.telefone))
+          queryDoTenant(collection(db, "clientes"), where("telefone", "==", pedido.telefone))
         );
 
         if (!clientesTelefoneSnapshot.empty) {
@@ -963,6 +966,7 @@ Fico à disposição para ajustar qualquer detalhe.`;
         clienteId = clienteEncontrado.id;
       } else {
         const clienteRef = await addDoc(collection(db, "clientes"), {
+          tenantId: obterTenantId(),
           cnpj: pedido.cnpj || "",
           nome: pedido.cliente,
           empresa: pedido.empresa || "",
@@ -982,6 +986,7 @@ Fico à disposição para ajustar qualquer detalhe.`;
     const valor = Number(pedido.valorEstimado || 0);
 
     const orcamentoRef = await addDoc(collection(db, "orcamentos"), {
+      tenantId: obterTenantId(),
       numeroOS,
       clienteId,
       cliente: pedido.cliente,
@@ -1169,6 +1174,7 @@ Fico à disposição para ajustar qualquer detalhe.`;
         itensParaOrcamento.map((item: any) => item.servico).filter(Boolean).join(" + ") ||
         "Pré-venda comercial";
       const payload = {
+        tenantId: pedidoBase.tenantId || obterTenantId(),
         numeroOS,
         clienteId,
         cliente: pedidoBase.cliente || cliente,
@@ -1222,6 +1228,7 @@ Fico à disposição para ajustar qualquer detalhe.`;
       if (!pedidoBase.id && origemFormulario) {
         await addDoc(collection(db, "crm"), {
           ...pedidoBase,
+          tenantId: pedidoBase.tenantId || obterTenantId(),
           clienteId,
           valorEstimado: vendaTotal,
           status: "Convertido em orçamento",

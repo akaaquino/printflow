@@ -17,6 +17,7 @@ import {
 } from "firebase/firestore";
 
 import { auth, db } from "@/app/lib/firebase";
+import { queryDoTenant } from "@/app/lib/firestore-tenant";
 
 type ItemOrcamentoForm = {
   materialId: string;
@@ -74,7 +75,7 @@ export default function OrcamentosPage() {
   ]);
 
   async function carregarClientes() {
-    const querySnapshot = await getDocs(collection(db, "clientes"));
+    const querySnapshot = await getDocs(queryDoTenant(collection(db, "clientes")));
     const lista: any[] = [];
 
     querySnapshot.forEach((documento) => {
@@ -88,7 +89,7 @@ export default function OrcamentosPage() {
   }
 
   async function carregarOrcamentos() {
-    const querySnapshot = await getDocs(collection(db, "orcamentos"));
+    const querySnapshot = await getDocs(queryDoTenant(collection(db, "orcamentos")));
     const lista: any[] = [];
 
     querySnapshot.forEach((documento) => {
@@ -108,7 +109,7 @@ export default function OrcamentosPage() {
   }
 
   async function carregarMateriais() {
-    const querySnapshot = await getDocs(collection(db, "materiais"));
+    const querySnapshot = await getDocs(queryDoTenant(collection(db, "materiais")));
     const lista: any[] = [];
 
     querySnapshot.forEach((documento) => {
@@ -396,7 +397,7 @@ export default function OrcamentosPage() {
   }
 
   async function gerarNumeroOS() {
-    const querySnapshot = await getDocs(collection(db, "orcamentos"));
+    const querySnapshot = await getDocs(queryDoTenant(collection(db, "orcamentos")));
     const proximoNumero = querySnapshot.size + 1;
 
     return `OS-${String(proximoNumero).padStart(5, "0")}`;
@@ -760,7 +761,7 @@ export default function OrcamentosPage() {
       setAprovandoOrcamentoId(orcamento.id);
 
       const arteExistente = await getDocs(
-        query(collection(db, "artes"), where("orcamentoId", "==", orcamento.id), limit(1))
+        queryDoTenant(collection(db, "artes"), where("orcamentoId", "==", orcamento.id), limit(1))
       );
 
       const aprovadoEm = new Date();

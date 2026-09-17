@@ -13,7 +13,8 @@
     "security:secrets": "node scripts/security-check.mjs",
     "security": "npm run security:audit && npm run security:secrets",
     "verify": "npm run typecheck && npm run lint && npm run security && npm run build",
-    "definir-papel": "node scripts/definir-papel.mjs"
+    "definir-papel": "node scripts/definir-papel.mjs",
+    "migrar:tenant": "node scripts/migrar-tenant.mjs"
   },
   "dependencies": {
     "firebase": "^12.18.0",

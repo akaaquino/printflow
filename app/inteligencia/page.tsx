@@ -5,6 +5,7 @@ import Sidebar from "@/components/Sidebar";
 import AuthGuard from "@/components/AuthGuard";
 import { collection, getDocs } from "firebase/firestore";
 import { db } from "@/app/lib/firebase";
+import { queryDoTenant } from "@/app/lib/firestore-tenant";
 
 export default function InteligenciaPage() {
   const [orcamentos, setOrcamentos] = useState<any[]>([]);
@@ -16,10 +17,10 @@ export default function InteligenciaPage() {
   async function carregarDados() {
     const [orcamentosSnap, producoesSnap, materiaisSnap, movSnap] =
       await Promise.all([
-        getDocs(collection(db, "orcamentos")),
-        getDocs(collection(db, "producoes")),
-        getDocs(collection(db, "materiais")),
-        getDocs(collection(db, "movimentacoesEstoque")),
+        getDocs(queryDoTenant(collection(db, "orcamentos"))),
+        getDocs(queryDoTenant(collection(db, "producoes"))),
+        getDocs(queryDoTenant(collection(db, "materiais"))),
+        getDocs(queryDoTenant(collection(db, "movimentacoesEstoque"))),
       ]);
 
     setOrcamentos(orcamentosSnap.docs.map((doc) => ({ id: doc.id, ...doc.data() })));

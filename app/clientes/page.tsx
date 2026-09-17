@@ -15,6 +15,7 @@ import {
 } from "firebase/firestore";
 
 import { auth, db } from "@/app/lib/firebase";
+import { queryDoTenant, obterTenantId } from "@/app/lib/firestore-tenant";
 import {
   formatarCEP,
   formatarCNPJ,
@@ -363,7 +364,7 @@ export default function ClientesPage() {
 
   async function carregarColecao(nomeColecao: string) {
     try {
-      const querySnapshot = await getDocs(collection(db, nomeColecao));
+      const querySnapshot = await getDocs(queryDoTenant(collection(db, nomeColecao)));
       const lista: any[] = [];
 
       querySnapshot.forEach((documento) => {
@@ -888,7 +889,7 @@ export default function ClientesPage() {
         situacao,
         analiseRisco,
         status: "Ativo",
-        tenantId: auth.currentUser?.uid || "",
+        tenantId: obterTenantId(),
         criadoEm: new Date(),
         atualizadoEm: new Date(),
       };
@@ -1009,6 +1010,7 @@ export default function ClientesPage() {
 
       const dadosAtualizados = {
         ...prepararDadosCliente(formEdicao),
+        tenantId: clienteAberto.tenantId || obterTenantId(),
         status:
           clienteAberto.arquivado || clienteAberto.status === "Arquivado"
             ? "Arquivado"

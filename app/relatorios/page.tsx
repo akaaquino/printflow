@@ -9,6 +9,7 @@ import AuthGuard from "@/components/AuthGuard";
 
 import { collection, getDocs } from "firebase/firestore";
 import { db } from "@/app/lib/firebase";
+import { queryDoTenant } from "@/app/lib/firestore-tenant";
 
 export default function RelatoriosPage() {
   const [orcamentos, setOrcamentos] = useState<any[]>([]);
@@ -28,11 +29,11 @@ export default function RelatoriosPage() {
       movimentacoesSnap,
       pedidosComerciaisSnap,
     ] = await Promise.all([
-      getDocs(collection(db, "orcamentos")),
-      getDocs(collection(db, "producoes")),
-      getDocs(collection(db, "materiais")),
-      getDocs(collection(db, "movimentacoesEstoque")),
-      getDocs(collection(db, "crm")),
+      getDocs(queryDoTenant(collection(db, "orcamentos"))),
+      getDocs(queryDoTenant(collection(db, "producoes"))),
+      getDocs(queryDoTenant(collection(db, "materiais"))),
+      getDocs(queryDoTenant(collection(db, "movimentacoesEstoque"))),
+      getDocs(queryDoTenant(collection(db, "crm"))),
     ]);
 
     setOrcamentos(
